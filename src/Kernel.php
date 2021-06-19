@@ -1,38 +1,56 @@
 <?php
 
-namespace App;
+namespace RateArticle;
 
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
-use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+use Symfony\Component\Config\Loader\LoaderInterface;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 
 class Kernel extends BaseKernel
 {
+    const CONFIG_EXTS = '.{php,xml,yaml,yml}';
+
     use MicroKernelTrait;
 
-    protected function configureContainer(ContainerConfigurator $container): void
+    /**
+     * {@inheritdoc}
+     */
+    public function registerBundles(): iterable
     {
-        $container->import('../config/{packages}/*.yaml');
-        $container->import('../config/{packages}/'.$this->environment.'/*.yaml');
-
-        if (is_file(\dirname(__DIR__).'/config/services.yaml')) {
-            $container->import('../config/services.yaml');
-            $container->import('../config/{services}_'.$this->environment.'.yaml');
-        } else {
-            $container->import('../config/{services}.php');
+        $contents = require ($this->getApplicationConfigDirectory() . '/bundles.php');
+        foreach ($contents as $class => $envs) {
+            if ($envs[$this->environment] ?? $envs['all'] ?? false) {
+                yield new $class();
+            }
         }
+    }
+
+    protected function configureContainer(ContainerBuilder $container, LoaderInterface $loader): void
+    {
+        $container->setParameter('container.autowiring.strict_mode', true);
+
+        $applicationConfigDirectory = $this->getApplicationConfigDirectory();
+
+        $loader->load($applicationConfigDirectory . '/packages/*' . self::CONFIG_EXTS, "glob");
+        $loader->load($applicationConfigDirectory . '/container/*' . self::CONFIG_EXTS, "glob");
     }
 
     protected function configureRoutes(RoutingConfigurator $routes): void
     {
-        $routes->import('../config/{routes}/'.$this->environment.'/*.yaml');
-        $routes->import('../config/{routes}/*.yaml');
+        $applicationConfigDirectory = $this->getApplicationConfigDirectory();
 
-        if (is_file(\dirname(__DIR__).'/config/routes.yaml')) {
-            $routes->import('../config/routes.yaml');
-        } else {
-            $routes->import('../config/{routes}.php');
-        }
+        $routes->import($applicationConfigDirectory . '/{routes}/'.$this->environment.'/*.yaml');
+        $routes->import($applicationConfigDirectory . '/{routes}/*.yaml');
+        $routes->import($applicationConfigDirectory . '/routes.yaml');
+    }
+
+    /**
+     * @return string
+     */
+    private function getApplicationConfigDirectory(): string
+    {
+        return $this->getProjectDir() . '/config/application';
     }
 }

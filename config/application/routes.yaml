@@ -1,0 +1,3 @@
+testRoute:
+    path: /test
+    controller: RateArticle\Example\Controllers\HelloWorld::run
