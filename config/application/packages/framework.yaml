@@ -18,3 +18,9 @@ framework:
         log: true
 
     cache:
+
+    http_client:
+        default_options:
+            headers:
+                'User-Agent': 'RateArticle'
+                Authorization: 'Basic %env(COMPLETE_KEY)%'

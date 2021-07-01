@@ -7,3 +7,26 @@ services:
 
     RateArticle\:
         resource: '../../../src/'
+
+    GuzzleHttp\Client: ~
+
+    RateArticle\Articles\Infrastructure\RepositoryAdapter\RepositoryBasedOnMysql:
+        public: true
+        arguments:
+            $entityManager: '@doctrine.orm.entity_manager'
+
+    RateArticle\Articles\Application\UseCases\Commands\AddNewArticle\Handler:
+        public: true
+        arguments:
+            $articleRepository: '@RateArticle\Articles\Infrastructure\RepositoryAdapter\RepositoryBasedOnMysql'
+
+    RateArticle\Articles\Application\UseCases\Commands\AddNewArticle\CommandFactory:
+        public: true
+        arguments:
+            $articleDetailsProvider: '@RateArticle\Articles\Infrastructure\ArticleDetailsProvider\ArticleDetailsBasedOnUrlMetaApi'
+
+    RateArticle\Articles\Infrastructure\ArticleDetailsProvider\ArticleDetailsBasedOnUrlMetaApi:
+        public: true
+        arguments:
+            $client: '@GuzzleHttp\Client'
+            $completeKey: '%env(resolve:COMPLETE_KEY)%'

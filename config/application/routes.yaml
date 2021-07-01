@@ -1,3 +1,28 @@
-testRoute:
-    path: /test
-    controller: RateArticle\Example\Controllers\HelloWorld::run
+createNewArticle:
+    path: /api1.0/createNewArticle
+    controller: RateArticle\Articles\Controllers\CreateNewArticle::run
+    methods: POST
+
+getArticle:
+    path: /api1.0/getArticle/{articleId}
+    controller: RateArticle\Articles\Controllers\GetArticle::run
+    methods: GET
+    requirements:
+        article: '\d+'
+
+getAllArticles:
+    path: /api1.0/getAllArticles
+    controller: RateArticle\Articles\Controllers\GetAllArticles::run
+    methods: GET
+
+rateArticle:
+    path: /api1.0/rateArticle
+    controller: RateArticle\Judgements\Controllers\RateArticle::run
+    methods: POST
+
+getJudgements:
+    path: /api1.0/getJudgements/{articleId}
+    controller: RateArticle\Judgements\Controllers\GetJudgements::run
+    methods: GET
+    requirements:
+        article: '\d+'
