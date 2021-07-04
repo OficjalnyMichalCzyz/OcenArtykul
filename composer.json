@@ -8,6 +8,8 @@
         "php": ">=8.0",
         "ext-ctype": "*",
         "ext-iconv": "*",
+        "ext-json": "*",
+        "ext-mbstring": "*",
         "ext-pdo": "*",
         "composer/package-versions-deprecated": "1.11.99.2",
         "doctrine/doctrine-bundle": "^2.4",
@@ -22,9 +24,7 @@
         "symfony/http-client": "5.4.*",
         "symfony/proxy-manager-bridge": "5.4.*",
         "symfony/runtime": "5.4.*",
-        "symfony/yaml": "5.4.*",
-        "ext-json": "*",
-        "ext-mbstring": "*"
+        "symfony/yaml": "5.4.*"
     },
     "config": {
         "platform": {

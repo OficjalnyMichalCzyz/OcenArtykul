@@ -26,3 +26,8 @@ getJudgements:
     methods: GET
     requirements:
         article: '\d+'
+
+getArticleDetails:
+    path: /api1.0/getArticleDetails
+    controller: RateArticle\Articles\Controllers\GetArticleDetails::run
+    methods: POST
