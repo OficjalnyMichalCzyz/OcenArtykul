@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<head>
+    <title>Oceń artykuł</title>
+</head>
+<style>
+    html, body {
+        width: 100%;
+        height: 100%;
+        background-color: bisque;
+    }
+
+    .articleImageSizeCSS {
+        margin: auto;
+        height: 30vh;
+        background-position: center center;
+        background-repeat: no-repeat;
+    }
+
+    .articleDivInline {
+        margin: auto;
+        font-size: 2vh;
+        height: 100%;
+        width: 50%;
+        text-align: center;
+    }
+
+    .articleMainContainer {
+        margin: auto;
+        width: 60vw;
+        border: 5px double;
+        border-color: bisque;
+    }
+
+    #mainContainer, #judgementContainer {
+        padding-top: 7vh;
+        margin: auto;
+        width: 70vw;
+        background-color: azure;
+    }
+
+    .text-truncate {
+        overflow: hidden;
+        text-align: center;
+    }
+
+    .topnav {
+        height: 6vh;
+        position: fixed;
+        left: 50%;
+        transform: translate(-50%, 0);
+        width: 75vw;
+        background-color: #333;
+        overflow: hidden;
+    }
+
+    .topnav a {
+        float: left;
+        color: #41B9E2;
+        text-align: center;
+        padding: 14px 16px;
+        text-decoration: none;
+        font-size: 26px;
+    }
+
+    .topnav a:hover {
+        background-color: #ddd;
+        color: black;
+    }
+
+    .topnav a.active {
+        height: 100%;
+        background-color: #333;
+        color: white;
+    }
+
+    .logo {
+        height: 100%;
+        float: left;
+    }
+
+    .active:hover {
+        background-color: #FFF;
+        transition: 0.8s;
+    }
+
+    .judgementImageSizeCSS {
+        height: 10vh;
+        background-position: center center;
+        background-repeat: no-repeat;
+    }
+
+    .judgementContainer:hover {
+        box-shadow: 0 0 5px 5px rgb(51, 51, 51);
+    }
+
+    .judgementDivInline {
+        font-size: 2vh;
+        height: fit-content;
+        width: 50%;
+        float: left;
+        text-align: center;
+        display: block;
+    }
+
+    .judgementContainer {
+        margin-left: 4.75vw;
+        width: 60vw;
+        height: fit-content;
+        border: 5px double;
+        border-color: bisque;
+        display: inline-block;
+    }
+
+    #mainJudgementContainer {
+        margin: auto;
+        justify-content: center;
+        align-items: center;
+        padding-top: 7vh;
+        width: 70vw;
+        background-color: azure;
+    }
+
+    #judgementBody {
+        height: 90%;
+        width: 95%;
+    }
+
+    #sendJudgementButton {
+
+    }
+
+    .footer {
+        width: 100%;
+        text-align: center;
+        position: absolute;
+        bottom: 0;
+    }
+</style>
+<body>
+<div class="topnav">
+    <img src="logo.png" class="logo">
+    <a href="index.html" class="active">Strona główna</a>
+    <a href="add.html" class="active">Dodaj artykuł</a>
+    <a href="statictics.html" class="active">Statystyki</a>
+    <a href="credits" class="active">Twórcy</a>
+
+
+</div>
+<div id="mainContainer">
+
+</div>
+<div id="mainJudgementContainer">
+    <div class="judgementContainer" style="text-align:center;">
+            <label for="judgementBody">Wpisz treść oceny:</label><br><br>
+            <textarea id="judgementBody" name="judgementBody" rows="4" cols="50" placeholder="Treść twojej oceny powinna zawierać conajmniej 3 znaki oraz maksymalnie 2500." minlength="3" maxlength="2499" ></textarea><br><br>
+                <select name="rating" id="rating">
+                    <option value="1"> Prawdziwy artykuł</option>
+                    <option value="0"> Fake news</option>
+                </select>
+        <input type="button" value="Oceń" id="sendJudgementButton" onclick="sendJudgement()">
+    </div>
+</div>
+<div class="footer">
+
+</div>
+<script>
+    function sendJudgement() {
+        var e = document.getElementById("rating");
+        var judgementValue = e.options[e.selectedIndex].value;
+        const data = {
+            body: document.getElementById("judgementBody").value,
+            type: parseInt(judgementValue),
+            judgedArticleId: parseInt(searchParams.get('id'))
+        };
+
+        fetch('http://localhost/api1.0/rateArticle', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        })
+            .then(response => {
+                if (response.status === 400) {
+                    alert("Błąd podczas dodawania oceny!");
+                    return;
+                }
+
+                if (response.status === 422) {
+                    alert("Jedno z pól jest niepoprawne. Popraw i ponów próbę!");
+                    return;
+                }
+                if (response.status === 201) {
+                    alert("Dodano pomyslnie!");
+                    window.location.reload();
+                }
+            })
+            .catch((error) => {
+                alert(error)
+            });
+    }
+
+    function redirectToArticle(articleUrl) {
+        location.href = articleUrl;
+    }
+
+    let url = new URL(window.location.href);
+    let searchParams = new URLSearchParams(url.search);
+    if (searchParams.get('id') == null) {
+        location.href = "index.html";
+    }
+
+    fetch('HTTP://localhost/api1.0/getArticle/' + searchParams.get('id'), {
+        method: 'GET'
+    })
+        .then(response => response.json())
+        .then(data => {
+            let detailsList = document.getElementById('mainContainer');
+                let article = document.createElement('div');
+                let imageDiv = document.createElement('div');
+                let articleDescriptionDiv = document.createElement('div');
+                let imageImg = document.createElement('img');
+                let articleUrl = document.createElement('a');
+                let articleDate = document.createElement('div');
+
+                imageImg.setAttribute("src", ` ${data.imageUrl} `);
+                imageImg.setAttribute("class", `articleImageSizeCSS`);
+
+
+                imageDiv.appendChild(imageImg);
+                imageDiv.setAttribute("class", `articleDivInline`);
+
+                articleUrl.setAttribute("href", ` ${data.articleUrl} `);
+                articleUrl.setAttribute("class", `articleDivInline text-truncate`);
+                articleUrl.append(
+                    ` ${
+                        data.articleUrl
+                    } `
+                );
+
+                articleDate.setAttribute("class", `articleDivInline text-truncate`);
+                articleDate.append(
+                    ` ${
+                        data.dateOfPosting.date
+                    } `
+                );
+
+                articleDescriptionDiv.append(
+                    ` Opis artykułu: ${
+                        data.articleDescription
+                    } `
+                );
+                articleDescriptionDiv.setAttribute("class", `articleDivInline text-truncate`);
+
+                article.setAttribute("class", `articleMainContainer`);
+                article.setAttribute("onclick", `redirectToArticle(${data.articleUrl})`);
+
+                article.appendChild(articleDate)
+                article.appendChild(imageDiv);
+                article.appendChild(articleDescriptionDiv)
+                article.appendChild(articleUrl);
+            detailsList.appendChild(article);
+        })
+        .catch(console.error);
+
+    fetch('HTTP://localhost/api1.0/getJudgements/' + searchParams.get('id'), {
+        method: 'GET'
+    })
+        .then(response => response.json())
+        .then(data => {
+            let judgementsList = document.getElementById('mainJudgementContainer');
+            data.reverse();
+            for (const product of data) {
+                let judgement = document.createElement('div');
+                let valueDiv = document.createElement('div');
+                let judgementBodyDiv = document.createElement('div');
+                let valueImg = document.createElement('img');
+
+                if (`${product.value}` === "1") {
+                    valueImg.setAttribute("src", "ok.png");
+                } else {
+                    valueImg.setAttribute("src", "x.png");
+                }
+
+                valueImg.setAttribute("class", `judgementImageSizeCSS`);
+
+
+                valueDiv.appendChild(valueImg);
+                valueDiv.setAttribute("class", `judgementDivInline`);
+
+
+                judgementBodyDiv.append(
+                    ` Komentarz z godziny ${
+                        product.dateOfPosting.date
+                    } : ${
+                        product.body
+                    } `
+                );
+                judgementBodyDiv.setAttribute("class", `judgementDivInline`);
+
+                judgement.setAttribute("class", `judgementContainer`);
+                judgement.setAttribute("onclick", `redirectToArticle(${product.id})`);
+
+                judgement.appendChild(judgementBodyDiv)
+                judgement.appendChild(valueDiv);
+                judgementsList.appendChild(judgement);
+            }
+        })
+        .catch(console.error);
+</script>
+</body>
+

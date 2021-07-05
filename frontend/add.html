@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<head>
+    <title>Oceń artykuł</title>
+</head>
+<style>
+    html, body {
+        width: 100%;
+        height: 100%;
+        background-color: bisque;
+    }
+
+    .articleImageSizeCSS {
+        max-height: 100%;
+        background-position: center center;
+        background-repeat: no-repeat;
+    }
+
+    .articleDivInline {
+        font-size: 2vh;
+        height: 100%;
+        width: 50%;
+        float: left;
+        text-align: center;
+        display: block;
+    }
+
+    .articleMainContainer {
+        margin-left: 4.75vw;
+        width: 60vw;
+        height: 20vh;
+        border: 5px double;
+        border-color: bisque;
+    }
+
+    #mainContainer {
+        padding-top: 7vh;
+        margin: auto;
+        width: 70vw;
+        background-color: azure;
+    }
+
+    .text-truncate {
+        text-align: center;
+        overflow: hidden;
+    }
+
+    .topnav {
+        height: 6vh;
+        position: fixed;
+        left: 50%;
+        transform: translate(-50%, 0);
+        width: 75vw;
+        background-color: #333;
+        overflow: hidden;
+    }
+
+    .topnav a {
+        float: left;
+        color: #41B9E2;
+        text-align: center;
+        padding: 14px 16px;
+        text-decoration: none;
+        font-size: 26px;
+    }
+
+    .topnav a.active {
+        height: 100%;
+        background-color: #333;
+        color: white;
+    }
+
+    .logo {
+        height: 100%;
+        float: left;
+    }
+
+    .active:hover {
+        background-color: #FFF;
+        transition: 0.8s;
+    }
+
+    .footer {
+        width: 100%;
+        text-align: center;
+        position: absolute;
+        bottom: 0;
+    }
+</style>
+<body>
+<div class="topnav">
+    <img src="logo.png" class="logo">
+    <a href="index.html" class="active">Strona główna</a>
+    <a href="add.html" class="active">Dodaj artykuł</a>
+    <a href="statictics.html" class="active">Statystyki</a>
+    <a href="credits" class="active">Twórcy</a>
+
+
+</div>
+<div id="mainContainer">
+    <div id="mainJudgementContainer">
+        <div class="judgementContainer" style="text-align:center;">
+            <label for="articleUrl">Dodaj artykuł</label><br><br>
+            <textarea id="articleUrl" name="articleUrl" rows="3" cols="50" placeholder="Wklej tutaj link do artykułu." minlength="3" maxlength="2499" ></textarea><br><br>
+            <input type="button" value="Pobierz podgląd artykułu" id="sendJudgementButton" onclick="getArticleDetails()" >
+            <input type="button" value="Wyślij artykuł do oceny" onclick="postArticle()">
+        </div>
+    </div>
+</div>
+<div class="footer">
+    2021 Michal Czyż
+</div>
+<script>
+    function redirectToArticle(id) {
+        location.href = "article.html?id=" + id;
+    }
+
+    function postArticle() {
+        const data = {
+            articleUrl: document.getElementById("articleUrl").value
+        };
+
+        fetch('http://localhost/api1.0/createNewArticle', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        })
+            .then(response => {
+                if (response.status === 400) {
+                    alert("Błąd podczas dodawania artykułu!");
+                    return;
+                }
+
+                if (response.status === 422) {
+                    alert("Jedno z pól jest niepoprawne. Popraw i ponów próbę!");
+                    return;
+                }
+                if (response.status === 201) {
+                    alert("Dodano pomyslnie!");
+                    location.href = "index.html";
+                }
+            })
+    }
+
+    function getArticleDetails() {
+            const data = {
+                link: document.getElementById("articleUrl").value
+            };
+
+        fetch('HTTP://localhost/api1.0/getArticleDetails', {
+            method: 'POST',
+                headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        })
+            .then(response => response.json())
+            .then(data => {
+                let detailsList = document.getElementById('mainContainer');
+                let article = document.createElement('div');
+                let imageDiv = document.createElement('div');
+                let articleDescriptionDiv = document.createElement('div');
+                let imageImg = document.createElement('img');
+                let button = document.createElement('input');
+                button.setAttribute("type", `button`);
+                button.setAttribute("value", `Dodaj artykuł`);
+                button.setAttribute("id", `sendJudgementButton`);
+                button.setAttribute("onclick", `sendArticle()`);
+                button.setAttribute("style", `text-align:center;`);
+
+                imageImg.setAttribute("src", ` ${data.imageUrl} `);
+                imageImg.setAttribute("class", `articleImageSizeCSS`);
+
+
+                imageDiv.appendChild(imageImg);
+                imageDiv.setAttribute("class", `articleDivInline`);
+
+
+
+                articleDescriptionDiv.append(
+                    ` Opis artykułu: ${
+                        data.articleDescription
+                    } `
+                );
+                articleDescriptionDiv.setAttribute("class", `articleDivInline text-truncate`);
+
+                article.setAttribute("class", `articleMainContainer`);
+                article.setAttribute("onclick", `redirectToArticle(${data.articleUrl})`);
+
+
+                article.appendChild(imageDiv);
+                article.appendChild(articleDescriptionDiv)
+
+                detailsList.appendChild(article);
+
+
+            })
+            .catch(console.error);
+    }
+</script>
+</body>
+
